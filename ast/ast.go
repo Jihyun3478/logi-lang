@@ -28,7 +28,7 @@ type Program struct {
 // let 문장을 나타내는 노드 (let x = 5;)
 type LetStatement struct {
 	Token token.Token
-	Name *Identifier
+	Name  *Identifier
 	Value Expression
 }
 
@@ -36,6 +36,12 @@ type LetStatement struct {
 type Identifier struct {
 	Token token.Token
 	Value string
+}
+
+// return 문장을 나타내는 노드
+type ReturnStatement struct {
+	Token       token.Token
+	ReturnValue Expression
 }
 
 // Program의 첫 번째 문장의 토큰 리터럴을 반환
@@ -58,3 +64,9 @@ func (i *Identifier) expressionNode() {}
 
 // Identifier의 토큰 리터럴을 반환
 func (i *Identifier) TokenLiteral() string { return i.Token.Literal }
+
+// ReturnStatement가 Statement 인터페이스를 만족하도록 하는 마커 메서드
+func (rs *ReturnStatement) statementNode() {}
+
+// ReturnStatement의 토큰 리터럴을 반환
+func (rs *ReturnStatement) TokenLiteral() string { return rs.Token.Literal }

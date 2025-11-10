@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+
 	"github.com/Jihyun3478/logi-lang/ast"
 	"github.com/Jihyun3478/logi-lang/lexer"
 	"github.com/Jihyun3478/logi-lang/token"
@@ -10,18 +12,32 @@ import (
 type Parser struct {
 	l *lexer.Lexer
 
-	curToken token.Token
+	errors []string
+
+	curToken  token.Token
 	peekToken token.Token
 }
 
 // 렉서를 받아 새로운 파서를 생성하고 초기화
 func New(l *lexer.Lexer) *Parser {
-	p := &Parser{l: l}
+	p := &Parser{
+		l:      l,
+		errors: []string{},
+	}
 
 	p.nextToken()
 	p.nextToken()
 
 	return p
+}
+
+func (p *Parser) Errors() []string {
+	return p.errors
+}
+
+func (p *Parser) peekError(t token.TokenType) {
+	msg := fmt.Sprintf("expected next token to be %s, got %s instead", t, p.peekToken.Type)
+	p.errors = append(p.errors, msg)
 }
 
 // 현재 토큰을 다음 토큰으로 전진
@@ -50,6 +66,8 @@ func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
 	case token.LET:
 		return p.parseLetStatement()
+	case token.RETURN:
+		return p.parseReturnStatement()
 	default:
 		return nil
 	}
@@ -76,6 +94,18 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	return stmt
 }
 
+// return 문장을 파싱하여 ReturnStatement 노드 생성 (return 5;)
+func (p *Parser) parseReturnStatement() ast.Statement {
+	stmt := &ast.ReturnStatement{Token: p.curToken}
+
+	p.nextToken()
+
+	for !p.curTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+	return stmt
+}
+
 // 현재 토큰이 주어진 타입과 일치하는지 확인
 func (p *Parser) curTokenIs(t token.TokenType) bool {
 	return p.peekToken.Type == t
@@ -92,6 +122,7 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 		p.nextToken()
 		return true
 	} else {
+		p.peekError(t)
 		return false
 	}
 }
