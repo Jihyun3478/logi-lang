@@ -8,14 +8,32 @@ import (
 	"github.com/Jihyun3478/logi-lang/token"
 )
 
+const (
+	_ int = iota
+	LOWEST
+	EQUALS      // ==
+	LESSGREATER // > 또는 <
+	SUM         // +
+	PRODUCT     // *
+	PREFIX      // -X 또는 !X
+	CALL        // myFunction(X)
+)
+
+type (
+	prefixParseFn func() ast.Expression
+	infixParseFn  func(ast.Expression) ast.Expression
+)
+
 // 토큰을 읽어 AST를 생성하는 파서
 type Parser struct {
-	l *lexer.Lexer
-
+	l      *lexer.Lexer
 	errors []string
 
 	curToken  token.Token
 	peekToken token.Token
+
+	prefixParseFns map[token.TokenType]prefixParseFn
+	infixParseFns  map[token.TokenType]infixParseFn
 }
 
 // 렉서를 받아 새로운 파서를 생성하고 초기화
@@ -28,7 +46,37 @@ func New(l *lexer.Lexer) *Parser {
 	p.nextToken()
 	p.nextToken()
 
+	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
+	p.registerPrefix(token.IDENT, p.parseIdentifier)
+
 	return p
+}
+
+// 현재 토큰을 다음 토큰으로 전진
+func (p *Parser) nextToken() {
+	p.curToken = p.peekToken
+	p.peekToken = p.l.NextToken()
+}
+
+// 현재 토큰이 주어진 타입과 일치하는지 확인
+func (p *Parser) curTokenIs(t token.TokenType) bool {
+	return p.curToken.Type == t
+}
+
+// 다음 토큰이 주어진 타입과 일치하는지 확인
+func (p *Parser) peekTokenIs(t token.TokenType) bool {
+	return p.peekToken.Type == t
+}
+
+// 다음 토큰이 기대하는 타입이면 토큰을 전진시키고 true 반환
+func (p *Parser) expectPeek(t token.TokenType) bool {
+	if p.peekTokenIs(t) {
+		p.nextToken()
+		return true
+	} else {
+		p.peekError(t)
+		return false
+	}
 }
 
 func (p *Parser) Errors() []string {
@@ -38,12 +86,6 @@ func (p *Parser) Errors() []string {
 func (p *Parser) peekError(t token.TokenType) {
 	msg := fmt.Sprintf("expected next token to be %s, got %s instead", t, p.peekToken.Type)
 	p.errors = append(p.errors, msg)
-}
-
-// 현재 토큰을 다음 토큰으로 전진
-func (p *Parser) nextToken() {
-	p.curToken = p.peekToken
-	p.peekToken = p.l.NextToken()
 }
 
 // 전체 프로그램을 파싱하여 AST를 생성
@@ -69,7 +111,7 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.RETURN:
 		return p.parseReturnStatement()
 	default:
-		return nil
+		return p.parseExpressionStatement()
 	}
 }
 
@@ -87,7 +129,11 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 		return nil
 	}
 
-	for !p.curTokenIs(token.SEMICOLON) {
+	p.nextToken()
+
+	stmt.Value = p.parseExpression(LOWEST)
+
+	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	}
 
@@ -106,23 +152,36 @@ func (p *Parser) parseReturnStatement() ast.Statement {
 	return stmt
 }
 
-// 현재 토큰이 주어진 타입과 일치하는지 확인
-func (p *Parser) curTokenIs(t token.TokenType) bool {
-	return p.peekToken.Type == t
-}
+// 표현식 문장을 파싱하여 ExpressionStatement 노드 생성 (x + 5;)
+func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
+	stmt := &ast.ExpressionStatement{Token: p.curToken}
+	stmt.Expression = p.parseExpression(LOWEST)
 
-// 다음 토큰이 주어진 타입과 일치하는지 확인
-func (p *Parser) peekTokenIs(t token.TokenType) bool {
-	return p.peekToken.Type == t
-}
-
-// 다음 토큰이 기대하는 타입이면 토큰을 전진시키고 true 반환
-func (p *Parser) expectPeek(t token.TokenType) bool {
-	if p.peekTokenIs(t) {
+	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
-		return true
-	} else {
-		p.peekError(t)
-		return false
 	}
+	return stmt
+}
+
+// 주어진 우선순위로 표현식을 파싱 (프랫 파서의 핵심)
+func (p *Parser) parseExpression(precedence int) ast.Expression {
+	prefix := p.prefixParseFns[p.curToken.Type]
+	if prefix == nil {
+		return nil
+	}
+	leftExp := prefix()
+	return leftExp
+}
+
+// 식별자를 파싱하여 Identifier 노드 생성 (x, foo)
+func (p *Parser) parseIdentifier() ast.Expression {
+	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+}
+
+func (p *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFn) {
+	p.prefixParseFns[tokenType] = fn
+}
+
+func (p *Parser) registerInfix(tokenType token.TokenType, fn infixParseFn) {
+	p.infixParseFns[tokenType] = fn
 }
