@@ -216,6 +216,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 	return leftExp
 }
 
+// 다음 토큰의 우선순위를 반환
 func (p *Parser) peekPrecedence() int {
 	if p, ok := precedences[p.peekToken.Type]; ok {
 		return p
@@ -223,6 +224,7 @@ func (p *Parser) peekPrecedence() int {
 	return LOWEST
 }
 
+// 현재 토큰의 우선순위를 반환
 func (p *Parser) curPrecedence() int {
 	if p, ok := precedences[p.curToken.Type]; ok {
 		return p
@@ -265,7 +267,7 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 	return expression
 }
 
-// 전위 연산 표현식을 파싱하여 InfixExpression 노드 생성 (-5, !true)
+// 중위 연산 표현식을 파싱하여 InfixExpression 노드 생성 (5 + 3, x * y)
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	expression := &ast.InfixExpression{
 		Token:    p.curToken,

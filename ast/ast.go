@@ -184,7 +184,7 @@ func (pe *PrefixExpression) String() string {
 	return out.String()
 }
 
-// 중위 연산 표현식을 나타내는 노드 (-5, !true)
+// 중위 연산 표현식을 나타내는 노드 (5 + 3, x * y)
 type InfixExpression struct {
 	Token    token.Token
 	Left     Expression
@@ -198,7 +198,7 @@ func (ie *InfixExpression) expressionNode() {}
 // InfixExpression의 토큰 리터럴을 반환
 func (ie *InfixExpression) TokenLiteral() string { return ie.Token.Literal }
 
-// InfixExpression을 문자열로 변환하여 반환 ((-5), (!true))
+// InfixExpression을 문자열로 변환하여 반환 ((5 + 3), (x * y))
 func (ie *InfixExpression) String() string {
 	var out bytes.Buffer
 
