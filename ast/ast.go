@@ -141,3 +141,20 @@ func (i *Identifier) TokenLiteral() string { return i.Token.Literal }
 func (i *Identifier) String() string {
 	return i.Value
 }
+
+// 정수 리터럴을 나타내는 노드 (5, 10, 100)
+type IntegerLiteral struct {
+	Token token.Token
+	Value int64
+}
+
+// IntegerLiteral이 Expression 인터페이스를 만족하도록 하는 마커 메서드
+func (il *IntegerLiteral) expressionNode() {}
+
+// IntegerLiteral의 토큰 리터럴을 반환
+func (il *IntegerLiteral) TokenLiteral() string { return il.Token.Literal }
+
+// IntegerLiteral을 문자열로 변환하여 반환 ("5")
+func (il *IntegerLiteral) String() string {
+	return il.Token.Literal
+}
