@@ -183,3 +183,30 @@ func (pe *PrefixExpression) String() string {
 
 	return out.String()
 }
+
+// 중위 연산 표현식을 나타내는 노드 (-5, !true)
+type InfixExpression struct {
+	Token token.Token
+	Left Expression
+	Operator string
+	Right Expression
+}
+
+// InfixExpression이 Expression 인터페이스를 만족하도록 하는 마커 메서드
+func (ie *InfixExpression) expressionNode() {}
+
+// InfixExpression의 토큰 리터럴을 반환
+func (ie *InfixExpression) TokenLiteral() string { return ie.Token.Literal }
+
+// InfixExpression을 문자열로 변환하여 반환 ((-5), (!true))
+func (ie *InfixExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(ie.Left.String())
+	out.WriteString(" " + ie.Operator + " ")
+	out.WriteString(ie.Right.String())
+	out.WriteString(")")
+
+	return out.String()
+}
