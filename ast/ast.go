@@ -158,3 +158,28 @@ func (il *IntegerLiteral) TokenLiteral() string { return il.Token.Literal }
 func (il *IntegerLiteral) String() string {
 	return il.Token.Literal
 }
+
+// 전위 연산 표현식을 나타내는 노드 (-5, !true)
+type PrefixExpression struct {
+	Token token.Token
+	Operator string
+	Right Expression
+}
+
+// PrefixExpression이 Expression 인터페이스를 만족하도록 하는 마커 메서드
+func (pe *PrefixExpression) expressionNode() {}
+
+// PrefixExpression의 토큰 리터럴을 반환
+func (pe *PrefixExpression) TokenLiteral() string { return pe.Token.Literal }
+
+// PrefixExpression을 문자열로 변환하여 반환 ((-5), (!true))
+func (pe *PrefixExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(pe.Operator)
+	out.WriteString(pe.Right.String())
+	out.WriteString(")")
+
+	return out.String()
+}
