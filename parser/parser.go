@@ -21,13 +21,13 @@ const (
 )
 
 var precedences = map[token.TokenType]int{
-	token.EQ: EQUALS,
-	token.NOT_EQ: EQUALS,
-	token.LT: LESSGREATER,
-	token.GT: LESSGREATER,
-	token.PLUS: SUM,
-	token.MINUS: SUM,
-	token.SLASH: PRODUCT,
+	token.EQ:       EQUALS,
+	token.NOT_EQ:   EQUALS,
+	token.LT:       LESSGREATER,
+	token.GT:       LESSGREATER,
+	token.PLUS:     SUM,
+	token.MINUS:    SUM,
+	token.SLASH:    PRODUCT,
 	token.ASTERISK: PRODUCT,
 }
 
@@ -254,7 +254,7 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 // 전위 연산 표현식을 파싱하여 PrefixExpression 노드 생성 (-5, !true)
 func (p *Parser) parsePrefixExpression() ast.Expression {
 	expression := &ast.PrefixExpression{
-		Token: p.curToken,
+		Token:    p.curToken,
 		Operator: p.curToken.Literal,
 	}
 
@@ -268,9 +268,9 @@ func (p *Parser) parsePrefixExpression() ast.Expression {
 // 전위 연산 표현식을 파싱하여 InfixExpression 노드 생성 (-5, !true)
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
 	expression := &ast.InfixExpression{
-		Token: p.curToken,
+		Token:    p.curToken,
 		Operator: p.curToken.Literal,
-		Left: left,
+		Left:     left,
 	}
 
 	precedence := p.curPrecedence()

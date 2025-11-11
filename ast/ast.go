@@ -107,7 +107,7 @@ func (rs *ReturnStatement) String() string {
 
 // 표현식으로 이루어진 문장을 나타내는 노드
 type ExpressionStatement struct {
-	Token token.Token
+	Token      token.Token
 	Expression Expression
 }
 
@@ -161,9 +161,9 @@ func (il *IntegerLiteral) String() string {
 
 // 전위 연산 표현식을 나타내는 노드 (-5, !true)
 type PrefixExpression struct {
-	Token token.Token
+	Token    token.Token
 	Operator string
-	Right Expression
+	Right    Expression
 }
 
 // PrefixExpression이 Expression 인터페이스를 만족하도록 하는 마커 메서드
@@ -186,10 +186,10 @@ func (pe *PrefixExpression) String() string {
 
 // 중위 연산 표현식을 나타내는 노드 (-5, !true)
 type InfixExpression struct {
-	Token token.Token
-	Left Expression
+	Token    token.Token
+	Left     Expression
 	Operator string
-	Right Expression
+	Right    Expression
 }
 
 // InfixExpression이 Expression 인터페이스를 만족하도록 하는 마커 메서드

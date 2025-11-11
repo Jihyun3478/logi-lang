@@ -72,7 +72,7 @@ func TestReturnStatements(t *testing.T) {
 }
 
 func TestIdentifierExpression(t *testing.T) {
-	input := "foobar";
+	input := "foobar"
 
 	l := lexer.New(input)
 	p := New(l)
@@ -95,7 +95,7 @@ func TestIdentifierExpression(t *testing.T) {
 		t.Errorf("ident.Value not %s. got=%s", "foobar", ident.Value)
 	}
 	if ident.TokenLiteral() != "foobar" {
-		t.Errorf("ident.TokenLiteral noto %s. got=%s", "foobar",  ident.TokenLiteral())
+		t.Errorf("ident.TokenLiteral noto %s. got=%s", "foobar", ident.TokenLiteral())
 	}
 }
 
@@ -129,8 +129,8 @@ func TestIntegerLiteralExpression(t *testing.T) {
 
 func TestParsingPrefixExpressions(t *testing.T) {
 	prefixTests := []struct {
-		input string
-		operator string
+		input        string
+		operator     string
 		integerValue int64
 	}{
 		{"!5;", "!", 5},
@@ -167,9 +167,9 @@ func TestParsingPrefixExpressions(t *testing.T) {
 
 func TestParsingInfixExpressions(t *testing.T) {
 	infixTests := []struct {
-		input string
-		leftValue int64
-		operator string
+		input      string
+		leftValue  int64
+		operator   string
 		rightValue int64
 	}{
 		{"5 + 5;", 5, "+", 5},
@@ -240,7 +240,7 @@ func testLetStatement(t *testing.T, stmt ast.Statement, name string) bool {
 	return true
 }
 
-func testIntegerLiteral (t *testing.T, il ast.Expression, value int64) bool {
+func testIntegerLiteral(t *testing.T, il ast.Expression, value int64) bool {
 	integ, ok := il.(*ast.IntegerLiteral)
 	if !ok {
 		t.Errorf("il not *ast.IntegerLiteral. got=%T", il)
@@ -256,7 +256,7 @@ func testIntegerLiteral (t *testing.T, il ast.Expression, value int64) bool {
 		t.Errorf("integ.TokenLiteral not %d. got=%s", value, integ.TokenLiteral())
 		return false
 	}
-	
+
 	return true
 }
 
