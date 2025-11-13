@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/Jihyun3478/logi-lang/evaluator"
 	"github.com/Jihyun3478/logi-lang/lexer"
 	"github.com/Jihyun3478/logi-lang/parser"
 )
@@ -39,8 +40,11 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		io.WriteString(out, program.String())
-		io.WriteString(out, "\n")
+		evaluated := evaluator.Eval(program)
+		if evaluated != nil {
+			io.WriteString(out, program.String())
+			io.WriteString(out, "\n")
+		}
 	}
 }
 
