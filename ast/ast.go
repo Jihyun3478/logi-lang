@@ -229,3 +229,61 @@ func (b *Boolean) TokenLiteral() string {
 func (b *Boolean) String() string {
 	return b.Token.Literal
 }
+
+// if 표현식을 나타내는 노드 (if (x < y) { x } else { y })
+type IfExpression struct {
+	Token token.Token
+	Condition Expression
+	Consequence *BlockStatement
+	Alternative *BlockStatement
+}
+
+// IfExpression이 Expression 인터페이스를 만족하도록 하는 마커 메서드
+func (ie *IfExpression) expressionNode() {}
+
+// IfExpression의 토큰 리터럴을 반환
+func (ie *IfExpression) TokenLiteral() string {
+	return ie.Token.Literal
+}
+
+// IfExpression을 문자열로 변환하여 반환
+func (ie *IfExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("if")
+	out.WriteString(ie.Condition.String())
+	out.WriteString(" ")
+	out.WriteString(ie.Consequence.String())
+	
+	if ie.Alternative != nil {
+		out.WriteString("else ")
+		out.WriteString(ie.Alternative.String())
+	}
+
+	return out.String()
+}
+
+// 블록 문장을 나타내는 노드 ({ x; y; })
+type BlockStatement struct {
+	Token token.Token
+	Statements []Statement
+}
+
+// BlockStatement가 Statement 인터페이스를 만족하도록 하는 마커 메서드
+func (bs *BlockStatement) statementNode() {}
+
+// BlockStatement의 토큰 리터럴을 반환
+func (bs *BlockStatement) TokenLiteral() string {
+	return bs.Token.Literal
+}
+
+// BlockStatement를 문자열로 변환하여 반환
+func (bs *BlockStatement) String() string {
+	var out bytes.Buffer
+
+	for _, s := range bs.Statements {
+		out.WriteString(s.String())
+	}
+
+	return out.String()
+}
