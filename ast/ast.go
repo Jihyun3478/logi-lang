@@ -321,3 +321,35 @@ func (fl *FunctionLiteral) String() string {
 
 	return out.String()
 }
+
+// 함수 호출 표현식을 나타내는 노드 (add(1, 2))
+type CallExpression struct {
+	Token token.Token
+	Function Expression
+	Arguments []Expression
+}
+
+// CallExpression이 Expression 인터페이스를 만족하도록 하는 마커 메서드
+func (ce *CallExpression) expressionNode() {}
+
+// allExpression의 토큰 리터럴을 반환
+func (ce *CallExpression) TokenLiteral() string {
+	return ce.Token.Literal
+}
+
+// CallExpression을 문자열로 변환하여 반환 (add(1, 2))
+func (ce *CallExpression) String() string {
+	var out bytes.Buffer
+
+	args := []string{}
+	for _, a := range ce.Arguments {
+		args = append(args, a.String())
+	}
+
+	out.WriteString(ce.Function.String())
+	out.WriteString("(")
+	out.WriteString(strings.Join(args, ", "))
+	out.WriteString(")")
+
+	return out.String()
+}
