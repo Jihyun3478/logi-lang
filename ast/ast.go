@@ -210,3 +210,22 @@ func (ie *InfixExpression) String() string {
 
 	return out.String()
 }
+
+// 불리언 리터럴을 나타내는 노드 (true, false)
+type Boolean struct {
+	Token token.Token
+	Value bool
+}
+
+// Boolean이 Expression 인터페이스를 만족하도록 하는 마커 메서드
+func (b *Boolean) expressionNode() {}
+
+// Boolean의 토큰 리터럴을 반환
+func (b *Boolean) TokenLiteral() string {
+	return b.Token.Literal
+}
+
+// Boolean을 문자열로 변환하여 반환 ("true", "false")
+func (b *Boolean) String() string {
+	return b.Token.Literal
+}
