@@ -195,6 +195,8 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 
 // 주어진 우선순위로 표현식을 파싱 (프랫 파서의 핵심)
 func (p *Parser) parseExpression(precedence int) ast.Expression {
+	defer untrace(trace("parseExpression"))
+
 	prefix := p.prefixParseFns[p.curToken.Type]
 	if prefix == nil {
 		p.noPrefixParseFnError(p.curToken.Type)
