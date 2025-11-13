@@ -165,7 +165,7 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	if !p.expectPeek(token.ASSIGN) {
 		return nil
 	}
-
+	
 	p.nextToken()
 
 	stmt.Value = p.parseExpression(LOWEST)
@@ -178,14 +178,17 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 }
 
 // return 문장을 파싱하여 ReturnStatement 노드 생성 (return 5;)
-func (p *Parser) parseReturnStatement() ast.Statement {
+func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	stmt := &ast.ReturnStatement{Token: p.curToken}
 
 	p.nextToken()
 
-	for !p.curTokenIs(token.SEMICOLON) {
+	stmt.ReturnValue = p.parseExpression(LOWEST)
+
+	if p.peekTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	}
+
 	return stmt
 }
 
