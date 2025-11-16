@@ -10,6 +10,7 @@ const (
 	BOOLEAN_OBJ = "BOOLEAN"
 	NULL_OBJ = "NULL"
 	RETURN_VALUE_OBJ = "RETURN_VALUE"
+	ERROR_OBJ = "ERROR"
 )
 
 // 모든 값 객체가 구현해야 하는 인터페이스
@@ -74,4 +75,17 @@ func (rv *ReturnValue) Type() ObjectType {
 // ReturnValue 객체를 문자열로 변환하여 반환
 func (rv *ReturnValue) Inspect() string {
 	return rv.Value.Inspect()
+}
+
+// 에러를 나타내는 객체
+type Error struct {
+	Message string
+}
+
+// Error 객체의 타입을 반환
+func (e *Error) Type() ObjectType { return ERROR_OBJ }
+
+// Error 객체를 문자열로 변환하여 반환
+func (e *Error) Inspect() string {
+	return "ERROR: " + e.Message
 }
