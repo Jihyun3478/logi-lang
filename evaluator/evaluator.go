@@ -70,8 +70,26 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			}
 			env.Set(node.Name.Value, val)
 
-		case *ast.Identifier:
-			return evalIdentifier(node, env)
+	case *ast.Identifier:
+		return evalIdentifier(node, env)
+
+	case *ast.FunctionLiteral:
+		params := node.Parameters
+		body := node.Body
+		return &object.Function{Parameters: params, Env: env, Body: body}
+
+	case *ast.CallExpression:
+		function := Eval(node.Function, env)
+		if isError(function) {
+			return function
+		}
+
+		args := evalExpressions(node.Arguments, env)
+		if len(args) == 1 && isError(args[0]) {
+			return args[0]
+		}
+
+		return applyFunction(function, args)
 	}
 
 	return nil
@@ -229,6 +247,57 @@ func evalIdentifier(
 		return newError("identifier not found: %s", node.Value)
 	}
 	return val
+}
+
+// 표현식 리스트를 평가하여 객체 리스트로 변환
+func evalExpressions(
+	exps []ast.Expression,
+	env *object.Environment,
+) []object.Object {
+	var result []object.Object
+
+	for _, e := range exps {
+		evaluated := Eval(e, env)
+		if isError(evaluated) {
+			return []object.Object{evaluated}
+		}
+		result = append(result, evaluated)
+	}
+
+	return result
+}
+
+// 함수 객체에 인자를 적용하여 실행
+func applyFunction(fn object.Object, args []object.Object) object.Object {
+	function, ok := fn.(*object.Function)
+	if !ok {
+		return newError("not a function: %s", fn.Type())
+	}
+
+	extendedEnv := extendFunctionEnv(function, args)
+	evaluated := Eval(function.Body, extendedEnv)
+	return unwrapReturnValue(evaluated)
+}
+
+// 함수 환경을 확장하여 매개변수를 바인딩
+func extendFunctionEnv(
+	fn *object.Function,
+	args []object.Object,
+) *object.Environment {
+	env := object.NewEnclosedEnvirionment(fn.Env)
+
+	for paramIdx, param := range fn.Parameters {
+		env.Set(param.Value, args[paramIdx])
+	}
+	return env
+}
+
+// ReturnValue 래퍼를 벗겨내어 실제 값 반환
+func unwrapReturnValue(obj object.Object) object.Object {
+	if returnValue, ok := obj.(*object.ReturnValue); ok {
+		return returnValue.Value
+	}
+	return obj
 }
 
 // 객체가 truthy한 값인지 판단
