@@ -9,6 +9,7 @@ const (
 	INTEGER_OBJ = "INTEGER"
 	BOOLEAN_OBJ = "BOOLEAN"
 	NULL_OBJ = "NULL"
+	RETURN_VALUE_OBJ = "RETURN_VALUE"
 )
 
 // 모든 값 객체가 구현해야 하는 인터페이스
@@ -58,4 +59,19 @@ func (n *Null) Type() ObjectType {
 // Null 객체를 문자열로 변환하여 반환
 func (n *Null) Inspect() string {
 	return "null"
+}
+
+// return 문의 반환값을 감싸는 객체
+type ReturnValue struct {
+	Value Object
+}
+
+// ReturnValue 객체의 타입을 반환
+func (rv *ReturnValue) Type() ObjectType {
+	return RETURN_VALUE_OBJ
+}
+
+// ReturnValue 객체를 문자열로 변환하여 반환
+func (rv *ReturnValue) Inspect() string {
+	return rv.Value.Inspect()
 }

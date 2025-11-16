@@ -17,7 +17,7 @@ func Eval(node ast.Node) object.Object {
 	
 	// 명령문
 	case *ast.Program:
-		return evalStatements(node.Statements)
+		return evalProgram(node)
 	
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression)
@@ -39,23 +39,54 @@ func Eval(node ast.Node) object.Object {
 		return evalInfixExpression(node.Operator, left, right)
 
 	case *ast.BlockStatement:
-		return evalStatements(node.Statements)
+		return evalBlockStatement(node)
+	
 	case *ast.IfExpression:
 		return evalIfExpression(node)
+
+	case *ast.ReturnStatement:
+		val := Eval(node.ReturnValue)
+		return &object.ReturnValue{Value: val}
 	}
 
 	return nil
 }
 
-// 문장 목록을 순차적으로 평가
-func evalStatements(stmts []ast.Statement) object.Object {
+// 프로그램을 평가하고 ReturnValue는 언래핑하여 반환
+func evalProgram(program *ast.Program) object.Object {
 	var result object.Object
 
-	for _, statement := range stmts {
+	for _, statement := range program.Statements {
 		result = Eval(statement)
+
+		if returnValue, ok := result.(*object.ReturnValue); ok {
+			return returnValue.Value
+		}
 	}
 
 	return result
+}
+
+// 블록 문장을 평가하고 return 문을 만나면 즉시 반환
+func evalBlockStatement(block *ast.BlockStatement) object.Object {
+	var result object.Object
+
+	for _, statement := range block.Statements {
+		result = Eval(statement)
+
+		if result != nil && result.Type() == object.RETURN_VALUE_OBJ {
+			return result
+		}
+	}
+
+	return result
+}
+
+func nativeBoolToBooleanObject(input bool) *object.Boolean {
+	if input {
+		return TRUE
+	}
+	return FALSE
 }
 
 // 전위 연산자 표현식을 평가 (!, -)
@@ -88,33 +119,6 @@ func evalInfixExpression(
 	}
 }
 
-// if-else 표현식을 평가
-func evalIfExpression(ie *ast.IfExpression) object.Object {
-	condition := Eval(ie.Condition)
-
-	if isTruthy(condition) {
-		return Eval(ie.Consequence)
-	} else if ie.Alternative != nil {
-		return Eval(ie.Alternative)
-	} else {
-		return NULL
-	}
-}
-
-// 객체가 truthy한 값인지 판단
-func isTruthy(obj object.Object) bool {
-	switch obj {
-	case NULL:
-		return false
-	case TRUE:
-		return true
-	case FALSE:
-		return false
-	default:
-		return true
-	}
-}
-
 // 논리 부정 연산자(!)를 평가
 func evalBangOperatorExpression(right object.Object) object.Object {
 	switch right {
@@ -136,13 +140,6 @@ func evalMinusPrefixOperatorExpression(right object.Object) object.Object {
 	}
 	value := right.(*object.Integer).Value
 	return &object.Integer{Value: -value}
-}
-
-func nativeBoolToBooleanObject(input bool) *object.Boolean {
-	if input {
-		return TRUE
-	}
-	return FALSE
 }
 
 // 정수 중위 연산을 평가 (+, -, *, /, <, >, ==, !=)
@@ -172,5 +169,32 @@ func evalIntegerInfixExpression(
 		return nativeBoolToBooleanObject(leftVal != rightVal)
 	default:
 		return NULL
+	}
+}
+
+// if-else 표현식을 평가
+func evalIfExpression(ie *ast.IfExpression) object.Object {
+	condition := Eval(ie.Condition)
+
+	if isTruthy(condition) {
+		return Eval(ie.Consequence)
+	} else if ie.Alternative != nil {
+		return Eval(ie.Alternative)
+	} else {
+		return NULL
+	}
+}
+
+// 객체가 truthy한 값인지 판단
+func isTruthy(obj object.Object) bool {
+	switch obj {
+	case NULL:
+		return false
+	case TRUE:
+		return true
+	case FALSE:
+		return false
+	default:
+		return true
 	}
 }
